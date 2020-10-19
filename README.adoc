@@ -1,0 +1,50 @@
+= Path-Based Routing Sample Application 
+
+== Purpose
+
+To efficiently a test our multi-tenant networking approach we need sample applications that run on specified path prefixes.
+
+This sample application exists to provide that functionality as simply as possible. 
+
+[IMPORTANT]
+====
+This application is **not** intended to be used for anything other than testing path-based routing on the cluster.  Other sample applications will exist to test the DevSecOps pipeline and other platform features. 
+====
+
+== Build the App
+
+`docker build . -t sample-app`
+
+== Run the App
+
+This application takes two runtime environment variables: 
+
+|===
+| Environment Variable | Description
+
+| `MESSAGE_PATH`
+| the path where the message should be shown
+
+| `MESSAGE`
+| the message that should be shown at `MESSAGE_PATH`
+
+|===
+
+For example, running 
+
+`docker run -p 9001:80 -e MESSAGE="hey from the app" -e MESSAGE_PATH=/app sample-app`
+
+and navigating to http://localhost:9001/app will show "hey from the app" in the browser.
+
+== How it works
+
+=== Path Based Routing 
+
+This application takes advantage of the fact that nginx routes traffic by mapping the url path to the file structure. 
+
+Therefore, if an application should be hosted on `/some-base-path` then nginx checks for an `index.html` file in `/usr/share/nginx/html/some-base-path/`. 
+
+=== Container Entrypoint
+
+1. The `container-entrypoint.sh` file uses the `MESSAGE_PATH` environment variable to dynamically create the file structure that's expected
+2. The `envsubst` command is used to populate the `index.html.template` file into the expected `index.html` with the `MESSAGE` environment variable
